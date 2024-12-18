@@ -1,0 +1,19 @@
+---
+version: '3'
+
+env:
+  env_file: "dev.env"
+
+tasks:
+  default:
+    cmds:
+      - echo "****** Task Manager ********"
+      - echo "Deploying task-manager app"
+  setup:
+    cmds:
+      - source {{.env_file}} && export TAG REPO ENV && envsubst < tmpl-values.yaml > values-$ENV.yaml
+  deploy:
+    cmds:
+      - source {{.env_file}} && helm upgrade $COMPONENT . --install --values values-$ENV.yaml --create-namespace --namespace $NAMESPACE
+    deps:
+      - setup

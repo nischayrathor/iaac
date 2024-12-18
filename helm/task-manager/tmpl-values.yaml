@@ -14,15 +14,11 @@ image:
 
 config:
   configMap:
-    sslrootcert: "/app/certs/root.crt"
-    sslmode: "verify-full"
-    host: "db"
-    dbname: "postgres"
+    SSLMODE: "require"
+    DATABASE_HOST: "postgresql-ha-pgpool.postgresql.svc.cluster.local"
+    POSTGRES_DB: "postgres"
   secrets:
     fileName: secrets-$ENV.yaml
-  env:
-    - name: port
-      value: 5432
 
 imagePullSecrets: []
 
@@ -69,11 +65,11 @@ ingress:
 
 resources:
   limits:
-    cpu: 100m
-    memory: 128Mi
+    cpu: 500m
+    memory: 512Mi
   requests:
-    cpu: 100m
-    memory: 128Mi
+    cpu: 500m
+    memory: 512Mi
 
 ## https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
 livenessProbe:
@@ -86,6 +82,7 @@ livenessProbe:
   periodSeconds: 30
   successThreshold: 1
   timeoutSeconds: 3
+
 readinessProbe:
   httpGet:
     path: /health
@@ -104,16 +101,6 @@ autoscaling:
   maxReplicas: 10
   targetCPUUtilizationPercentage: 80
   targetMemoryUtilizationPercentage: 80
-
-volumes:
-  volumeMounts:
-  - name: pg-ca-cert
-    mountPath: "/app/certs/root.crt"
-
-  values:
-  - name: pg-ca-cert
-    secret:
-      secretName: pg-ca-cert
 
 nodeSelector: {}
 
