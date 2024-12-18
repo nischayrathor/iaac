@@ -1,0 +1,122 @@
+replicaCount: 1
+
+## https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy
+strategy:
+  rollingUpdate:
+    maxSurge: 25%
+    maxUnavailable: 25%
+  type: RollingUpdate
+
+image:
+  repository: $REPO
+  pullPolicy: IfNotPresent
+  tag: $TAG
+
+config:
+  configMap:
+    sslrootcert: "/app/certs/root.crt"
+    sslmode: "verify-full"
+    host: "db"
+    dbname: "postgres"
+  secrets:
+    fileName: secrets-$ENV.yaml
+  env:
+    - name: port
+      value: 5432
+
+imagePullSecrets: []
+
+nameOverride: ""
+
+fullnameOverride: ""
+
+podAnnotations: {}
+
+podLabels: {}
+
+## https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+podSecurityContext:
+  fsGroup: 1000
+  runAsUser: 1000
+  runAsGroup: 1000
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+    - ALL
+
+service:
+  type: ClusterIP
+  port: 8080
+  containerPort: 8080
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: task-manager.home.nischay.in
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+## https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 8080
+    scheme: HTTP
+  failureThreshold: 3
+  initialDelaySeconds: 5
+  periodSeconds: 30
+  successThreshold: 1
+  timeoutSeconds: 3
+readinessProbe:
+  httpGet:
+    path: /health
+    port: 8080
+    scheme: HTTP
+  failureThreshold: 3
+  initialDelaySeconds: 5
+  periodSeconds: 30
+  successThreshold: 1
+  timeoutSeconds: 2
+
+## https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+volumes:
+  volumeMounts:
+  - name: pg-ca-cert
+    mountPath: "/app/certs/root.crt"
+
+  values:
+  - name: pg-ca-cert
+    secret:
+      secretName: pg-ca-cert
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
