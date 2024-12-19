@@ -1,0 +1,15 @@
+apiVersion: eks.aws.crossplane.io/v1alpha1
+kind: Cluster
+metadata:
+  name: demo-eks-cluster
+spec:
+  forProvider:
+    region: us-east-1
+    roleArn: arn:aws:iam::123456789012:role/EKSClusterRole
+    version: "1.22"
+    resourcesVpcConfig:
+      subnetIds:
+        - <subnet-1>
+        - <subnet-2>
+  providerConfigRef:
+    name: aws-provider

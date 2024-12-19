@@ -1,0 +1,15 @@
+apiVersion: container.gcp.crossplane.io/v1beta1
+kind: Cluster
+metadata:
+  name: demo-gke-cluster
+spec:
+  forProvider:
+    location: us-central1
+    initialNodeCount: 3
+    nodeConfig:
+      machineType: e2-medium
+      diskSizeGb: 100
+      oauthScopes:
+        - https://www.googleapis.com/auth/cloud-platform
+  providerConfigRef:
+    name: gcp-provider
